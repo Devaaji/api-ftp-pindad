@@ -1,7 +1,7 @@
 import { DataTypes } from "sequelize";
 import db from "../config/Databases.js";
 
-const Item = db.define("01_item", {
+const Item2 = db.define("02_item", {
   uid: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
@@ -86,7 +86,7 @@ const Item = db.define("01_item", {
   },
 });
 
-export default Item;
+export default Item2;
 
 (async () => {
   await db.sync();

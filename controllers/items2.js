@@ -1,14 +1,14 @@
 import Client from "ftp";
 import dotenv from "dotenv";
-import Item from "../models/ItemModel.js";
+import Item2 from "../models/ItemModel2.js";
 dotenv.config();
 
-export const CreateItem = async (req, res) => {
+export const CreateItem2 = async (req, res) => {
   const Ftp = new Client();
 
   try {
     Ftp.on("ready", () => {
-      Ftp.list("/M6269-01", (err, list) => {
+      Ftp.list("/M6269-02", (err, list) => {
         if (err) {
           console.log("List Tidak Ditemukan");
         }
@@ -18,9 +18,10 @@ export const CreateItem = async (req, res) => {
 
         fileList.map(async (file) => {
           const client = new Client();
+
           if (file.size >= 1000) {
             client.on("ready", () => {
-              client.get(`/M6269-01/${file.name}`, (err, stream) => {
+              client.get(`/M6269-02/${file.name}`, (err, stream) => {
                 if (err) {
                   return console.log("Unable to scan directory: " + err);
                 }
@@ -59,12 +60,12 @@ export const CreateItem = async (req, res) => {
 
                   const status = data.substring(1129, 1140).trim();
 
-                  const project = await Item.findOne({
+                  const project = await Item2.findOne({
                     where: { nameFile: file.name },
                   });
 
                   if (project === null) {
-                    await Item.create({
+                    await Item2.create({
                       nameFile: file.name,
                       isFinish: true,
                       date_changed: file.date,
@@ -93,7 +94,7 @@ export const CreateItem = async (req, res) => {
                       status: status,
                     });
                   } else {
-                    await Item.update(
+                    await Item2.update(
                       {
                         nameFile: file.name,
                         isFinish: true,
@@ -134,18 +135,18 @@ export const CreateItem = async (req, res) => {
             });
           }
           if (file.size > 0) {
-            const project = await Item.findOne({
+            const project = await Item2.findOne({
               where: { nameFile: file.name },
             });
 
             if (project === null) {
-              await Item.create({
+              await Item2.create({
                 nameFile: file.name,
                 isFinish: false,
                 date_changed: file.date,
               });
             } else {
-              await Item.update(
+              await Item2.update(
                 { total_product: "", cycle_time: "" },
                 {
                   where: {
@@ -172,7 +173,7 @@ export const CreateItem = async (req, res) => {
       password: process.env.PASS_FTP,
       port: process.env.PORT_FTP,
     });
-    res.status(200).json({ status: 200, msg: "create item_01 berhasil" });
+    res.status(200).json({ status: 200, msg: "create item_02 berhasil" });
   } catch (error) {
     return res.status(500).json({
       status: 500,
@@ -182,12 +183,12 @@ export const CreateItem = async (req, res) => {
   }
 };
 
-export const GetAllItems = async (req, res) => {
+export const GetAllItems2 = async (req, res) => {
   const page = parseInt(req.body.page) - 1;
   const limit = parseInt(req.body.limit);
 
   const offset = limit * page;
-  const totalData = await Item.count();
+  const totalData = await Item2.count();
 
   const totalPage = Math.ceil(totalData / limit);
 
@@ -200,7 +201,7 @@ export const GetAllItems = async (req, res) => {
   }
 
   try {
-    const items = await Item.findAll({
+    const items = await Item2.findAll({
       offset: offset,
       limit: limit,
     });
@@ -221,12 +222,12 @@ export const GetAllItems = async (req, res) => {
   }
 };
 
-export const moveItem1DATtoCSV = (req, res) => {
+export const moveItem2DATtoCSV = (req, res) => {
   try {
     const Ftp = new Client();
 
     Ftp.on("ready", () => {
-      Ftp.list("/M6269-01", (err, list) => {
+      Ftp.list("/M6269-02", (err, list) => {
         if (err) {
           console.log("List Not Found");
         }
@@ -238,7 +239,7 @@ export const moveItem1DATtoCSV = (req, res) => {
           if (file.size > 1000) {
             const client = new Client();
 
-            client.get(`/M6269-01/${file.name}`, (err, stream) => {
+            client.get(`/M6269-02/${file.name}`, (err, stream) => {
               if (err) {
                 return console.log("Unable to scan directory: " + err);
               }
@@ -258,7 +259,7 @@ export const moveItem1DATtoCSV = (req, res) => {
                   // Copy and upload files to the server:
                   moveFtp.put(
                     data,
-                    `/Copy_M6269_01/${formatFileNameToCSV}.csv`,
+                    `/Copy_M6269_02/${formatFileNameToCSV}.csv`,
                     function (err) {
                       if (err) throw err;
                       moveFtp.end();
@@ -294,7 +295,7 @@ export const moveItem1DATtoCSV = (req, res) => {
     });
     return res
       .status(200)
-      .json({ status: 200, msg: "Berhasil item_01 DAT to CSV" });
+      .json({ status: 200, msg: "Berhasil item_02 DAT to CSV" });
   } catch (error) {
     return res.status(500).json({
       status: 500,

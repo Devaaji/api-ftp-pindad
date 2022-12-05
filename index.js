@@ -4,12 +4,12 @@ import http from "http";
 import cors from "cors";
 import db from "./config/Databases.js";
 import router from "./routes/ItemRoute.js";
-import { example } from "./testing/testing.js";
+// import { example } from "./testing/testing.js";
 const app = express();
 const server = http.createServer(app);
 dotenv.config();
 
-example();
+// example();
 
 try {
   db.authenticate().then(() => {
