@@ -1,7 +1,7 @@
 import { DataTypes } from "sequelize";
 import db from "../config/Databases.js";
 
-const Item = db.define("01_item", {
+const Report = db.define("01_report", {
   uid: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
@@ -12,18 +12,11 @@ const Item = db.define("01_item", {
   nameFile: {
     type: DataTypes.STRING,
   },
-  isFinish: {
-    type: DataTypes.BOOLEAN,
-  },
-  date_changed: {
-    type: DataTypes.DATE,
-  },
   date: {
     type: DataTypes.STRING,
   },
   time_prod: {
     type: DataTypes.STRING,
-    defaultValue: 0,
   },
   cycle_time: {
     type: DataTypes.STRING,
@@ -49,6 +42,9 @@ const Item = db.define("01_item", {
   p1_deviasi: {
     type: DataTypes.STRING,
   },
+  p1_desicion: {
+    type: DataTypes.STRING,
+  },
   p2_dimension: {
     type: DataTypes.STRING,
   },
@@ -65,6 +61,9 @@ const Item = db.define("01_item", {
     type: DataTypes.STRING,
   },
   p2_deviasi: {
+    type: DataTypes.STRING,
+  },
+  p2_desicion: {
     type: DataTypes.STRING,
   },
   p3_dimension: {
@@ -85,15 +84,15 @@ const Item = db.define("01_item", {
   p3_deviasi: {
     type: DataTypes.STRING,
   },
-  status: {
+  p3_desicion: {
     type: DataTypes.STRING,
   },
-  isAccept: {
-    type: DataTypes.BOOLEAN,
+  result: {
+    type: DataTypes.STRING,
   },
 });
 
-export default Item;
+export default Report;
 
 (async () => {
   await db.sync();

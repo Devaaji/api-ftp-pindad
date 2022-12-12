@@ -1,6 +1,7 @@
 import Client from "ftp";
 import dotenv from "dotenv";
 import Item from "../models/ItemModel.js";
+import { Op } from "sequelize";
 dotenv.config();
 
 export const CreateItem = async (req, res) => {
@@ -8,7 +9,7 @@ export const CreateItem = async (req, res) => {
 
   try {
     Ftp.on("ready", () => {
-      Ftp.list("/M6269-01", (err, list) => {
+      Ftp.list("/Copy_M6269_01", (err, list) => {
         if (err) {
           console.log("List Tidak Ditemukan");
         }
@@ -20,7 +21,7 @@ export const CreateItem = async (req, res) => {
           const client = new Client();
           if (file.size >= 1000) {
             client.on("ready", () => {
-              client.get(`/M6269-01/${file.name}`, (err, stream) => {
+              client.get(`/Copy_M6269_01/${file.name}`, (err, stream) => {
                 if (err) {
                   return console.log("Unable to scan directory: " + err);
                 }
@@ -28,6 +29,7 @@ export const CreateItem = async (req, res) => {
                 var content = "";
                 stream.on("data", async function (chunk) {
                   const data = (content += chunk.toString());
+                  const no_operasi = data.substring(5, 39).trim();
                   const date = data.substring(40 + 15, 73).trim();
                   const time_prod = data.substring(86, 99).trim();
                   const cycle_time = data.substring(114, 127).trim();
@@ -51,7 +53,7 @@ export const CreateItem = async (req, res) => {
 
                   //p3
                   const p3_dimensi = data.substring(934, 946).trim();
-                  const p3_toleransi = data.substring(934, 946).trim();
+                  const p3_toleransi = data.substring(948, 960).trim();
                   const p3_dimensi_min = data.substring(963, 980).trim();
                   const p3_dimensi_max = data.substring(980, 997).trim();
                   const p3_actual = data.substring(994, 1010).trim();
@@ -65,13 +67,14 @@ export const CreateItem = async (req, res) => {
 
                   if (project === null) {
                     await Item.create({
+                      no_operasi: no_operasi,
                       nameFile: file.name,
                       isFinish: true,
                       date_changed: file.date,
                       date: date,
                       time_prod: time_prod,
                       cycle_time: cycle_time,
-                      total_product: total_product,
+                      total_product: parseInt(total_product),
                       p1_dimension: p1_dimensi,
                       p1_tolerance: p1_toleransi,
                       p1_dimension_min: p1_dimensi_min,
@@ -91,17 +94,19 @@ export const CreateItem = async (req, res) => {
                       p3_actual: p3_actual,
                       p3_deviasi: p3_deviasi,
                       status: status,
+                      isAccept: false,
                     });
                   } else {
                     await Item.update(
                       {
+                        no_operasi: no_operasi,
                         nameFile: file.name,
                         isFinish: true,
                         date_changed: file.date,
                         date: date,
                         time_prod: time_prod,
                         cycle_time: cycle_time,
-                        total_product: total_product,
+                        total_product: parseInt(total_product),
                         p1_dimension: p1_dimensi,
                         p1_tolerance: p1_toleransi,
                         p1_dimension_min: p1_dimensi_min,
@@ -121,6 +126,7 @@ export const CreateItem = async (req, res) => {
                         p3_actual: p3_actual,
                         p3_deviasi: p3_deviasi,
                         status: status,
+                        isAccept: false,
                       },
                       {
                         where: {
@@ -133,7 +139,7 @@ export const CreateItem = async (req, res) => {
               });
             });
           }
-          if (file.size > 0) {
+          if (file.size < 1000) {
             const project = await Item.findOne({
               where: { nameFile: file.name },
             });
@@ -143,10 +149,11 @@ export const CreateItem = async (req, res) => {
                 nameFile: file.name,
                 isFinish: false,
                 date_changed: file.date,
+                isAccept: false,
               });
             } else {
               await Item.update(
-                { total_product: "", cycle_time: "" },
+                { total_product: 0, cycle_time: "" },
                 {
                   where: {
                     nameFile: file.name,
@@ -187,13 +194,24 @@ export const GetAllItems = async (req, res) => {
   const limit = parseInt(req.body.limit);
 
   const offset = limit * page;
-  const totalData = await Item.count();
+  const totalData = await Item.count({
+    where: {
+      [Op.and]: [
+        {
+          isFinish: true,
+        },
+        {
+          isAccept: false,
+        },
+      ],
+    },
+  });
 
   const totalPage = Math.ceil(totalData / limit);
 
   if (page >= totalPage) {
-    return res.status(404).json({
-      status: 404,
+    return res.status(200).json({
+      status: 200,
       messages: "Data Not Found!",
       data: null,
     });
@@ -203,6 +221,17 @@ export const GetAllItems = async (req, res) => {
     const items = await Item.findAll({
       offset: offset,
       limit: limit,
+      order: [["id", "ASC"]],
+      where: {
+        [Op.and]: [
+          {
+            isFinish: true,
+          },
+          {
+            isAccept: false,
+          },
+        ],
+      },
     });
     res.status(200).json({
       status: 200,

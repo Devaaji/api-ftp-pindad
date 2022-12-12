@@ -4,7 +4,7 @@ export async function example() {
   const Ftp = new Client();
 
   Ftp.on("ready", () => {
-    Ftp.list("/M6269-02", (err, list) => {
+    Ftp.list("/M6269-01", (err, list) => {
       if (err) {
         console.log("List Tidak Ditemukan");
       }
@@ -17,16 +17,15 @@ export async function example() {
           const client = new Client();
           if (file.size >= 0) {
             client.on("ready", () => {
-              client.get(`/M6269-02/${file.name}`, (err, stream) => {
+              client.get(`/M6269-01/${file.name}`, (err, stream) => {
                 if (err) {
                   return console.log("Unable to scan directory: " + err);
                 }
 
-                console.log("TES", file.name);
-
                 var content = "";
                 stream.on("data", function (chunk) {
                   const data = (content += chunk.toString());
+                  const no_operasi = data.substring(5, 39).trim();
                   const date = data.substring(40 + 15, 73).trim();
                   const time_prod = data.substring(86, 99).trim();
                   const cycle_time = data.substring(114, 127).trim();
@@ -43,14 +42,14 @@ export async function example() {
                   //p2
                   const p2_dimensi = data.substring(645, 659).trim();
                   const p2_toleransi = data.substring(659, 670).trim();
-                  const p2_dimensi_min = data.substring(671, 687).trim()
+                  const p2_dimensi_min = data.substring(671, 687).trim();
                   const p2_dimensi_max = data.substring(690, 705).trim();
                   const p2_actual = data.substring(705, 720).trim();
                   const p2_deviasi = data.substring(720, 733).trim();
 
                   //p3
                   const p3_dimensi = data.substring(934, 946).trim();
-                  const p3_toleransi = data.substring(934, 946).trim();
+                  const p3_toleransi = data.substring(948, 960).trim();
                   const p3_dimensi_min = data.substring(963, 980).trim();
                   const p3_dimensi_max = data.substring(980, 997).trim();
                   const p3_actual = data.substring(994, 1010).trim();
@@ -58,34 +57,9 @@ export async function example() {
 
                   const status = data.substring(1129, 1140).trim();
 
-                    const moveFtp = new Client();
-
-                    const formatFileNameToCSV = file.name
-                      .split(".")
-                      .slice(0, 1)
-                      .pop();
-
-                    moveFtp.on("ready", function () {
-                      // Copy and upload files to the server:
-                      moveFtp.put(
-                        data,
-                        `/Copy_M6269_02/${formatFileNameToCSV}.csv`,
-                        function (err) {
-                          if (err) throw err;
-                          moveFtp.end();
-                        }
-                      );
-                    });
-
-                    moveFtp.connect({
-                      host: "192.168.1.86",
-                      user: "usr",
-                      password: "12345",
-                      port: "21",
-                    });
-
                   console.log({
                     date,
+                    no_operasi,
                     time_prod,
                     cycle_time,
                     total_product,
