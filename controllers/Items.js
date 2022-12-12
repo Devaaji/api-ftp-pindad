@@ -171,6 +171,9 @@ export const CreateItem = async (req, res) => {
           });
         });
       });
+      return res
+        .status(200)
+        .json({ status: 200, msg: "create item_01 berhasil" });
     });
 
     Ftp.connect({
@@ -179,7 +182,6 @@ export const CreateItem = async (req, res) => {
       password: process.env.PASS_FTP,
       port: process.env.PORT_FTP,
     });
-    res.status(200).json({ status: 200, msg: "create item_01 berhasil" });
   } catch (error) {
     return res.status(500).json({
       status: 500,

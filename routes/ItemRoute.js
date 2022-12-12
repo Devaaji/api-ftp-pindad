@@ -24,9 +24,9 @@ router.get("/move_item_01", moveItem1DATtoCSV);
 router.post("/create_reports_01", createReportItem);
 router.post("/reports_01", GetAllReports);
 
-router.get("/dashboard_point_01", DashboardPoint01);
-router.get("/dashboard_point_02", DashboardPoint02);
-router.get("/dashboard_point_03", DashboardPoint03);
+router.post("/dashboard_point_01", DashboardPoint01);
+router.post("/dashboard_point_02", DashboardPoint02);
+router.post("/dashboard_point_03", DashboardPoint03);
 
 router.get("/item_02", CreateItem2);
 router.post("/item_02", GetAllItems2);
