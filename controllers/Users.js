@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import Users from "../models/userModel.js";
 
 export const Register = async (req, res) => {
   const { username, password, confPassword } = req.body;
@@ -28,7 +29,7 @@ export const Login = async (req, res) => {
   try {
     const user = await Users.findAll({
       where: {
-        email: req.body.email,
+        username: req.body.username,
       },
     });
 
@@ -39,11 +40,10 @@ export const Login = async (req, res) => {
     }
 
     const userId = user[0].id;
-    const name = user[0].name;
-    const email = user[0].email;
+    const username = user[0].username;
 
     const accessToken = jwt.sign(
-      { userId, name, email },
+      { userId, username },
       process.env.ACCESS_TOKEN_SECRET,
       {
         expiresIn: "20s",
@@ -51,7 +51,7 @@ export const Login = async (req, res) => {
     );
 
     const refreshToken = jwt.sign(
-      { userId, name, email },
+      { userId, username },
       process.env.REFRESH_TOKEN_SECRET,
       {
         expiresIn: "1d",
@@ -66,19 +66,16 @@ export const Login = async (req, res) => {
       }
     );
 
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      maxAge: 60 * 60 * 24 * 1000,
-    });
-
-    res.json({ accessToken });
+    res.json({ accessToken, refreshToken });
   } catch (error) {
-    res.status(404).json({ msg: "Email not found" });
+    res.status(404).json({ msg: "Username not found" });
   }
 };
 
 export const Logout = async (req, res) => {
-  const refreshToken = req.cookies.refreshToken;
+  const authHeader = req.headers["authorization"];
+  const refreshToken = authHeader && authHeader.split(" ")[1];
+
   if (!refreshToken) {
     return res.status(404).json({ status: 404, msg: "Token Not Found" });
   }
@@ -104,6 +101,5 @@ export const Logout = async (req, res) => {
     }
   );
 
-  res.clearCookie("refreshToken");
   return res.status(200).json({ status: 200, msg: "Clear Token Successful" });
 };

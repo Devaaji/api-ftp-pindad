@@ -1,15 +1,11 @@
 import express from "express";
 import dotenv from "dotenv";
-import http from "http";
 import cors from "cors";
 import db from "./config/Databases.js";
 import router from "./routes/ItemRoute.js";
-// import { example } from "./testing/testing.js";
+import cookieParser from "cookie-parser";
 const app = express();
-const server = http.createServer(app);
 dotenv.config();
-
-// example();
 
 try {
   db.authenticate().then(() => {
@@ -20,6 +16,7 @@ try {
 }
 
 app.use(cors());
+app.use(cookieParser());
 app.use(express.json());
 app.use(router);
 
